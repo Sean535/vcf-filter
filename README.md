@@ -16,7 +16,7 @@ pip install cyvcf2 jsonschema
 ```
 
 ## 🚀 Usage
-Template:
+- Template:
 ```
 python scripts/vcf_filter.py <input.vcf> <criteria.json> [-o output.vcf]
 ```
@@ -24,40 +24,32 @@ Input:\
 input.vcf: A VCF file in Mutect2 format.\
 criteria.json: A JSON object with field-based filtering conditions.
 
-Example:
+- Example:
 ```
 python scripts/vcf_filter.py SAMPLE_mutect2_raw.vcf criteria.json -o filtered_output.vcf
 ```
-With criteria.json:
-```
-{
-  "TLOD": ">=10",
-  "DP": ">=20",
-  "FILTER": "=="artifact""
-}
-```
 
-📂 Output
-A new VCF file where:\
+## 📂 Output
+- A new VCF file where:
 Variants passing all filter conditions get PASS in the FILTER field.\
 Other variants retain their original FILTER values.
 
 ## ⚙ Design
-Filtering Algorithm:\
+- Filtering Algorithm:
 Parse and validate the JSON criteria against the INFO schema extracted from the VCF header.
 
-For each variant:\
+- For each variant:
 Evaluate each filter rule.\
 If all are satisfied → FILTER=PASS, otherwise unchanged.\
 Write output using streaming (cyvcf2) to support large files.
 
-Supported Operators:\
+- Supported Operators:
 ==, !=, >, >=, <, <=
 
-Strings must be quoted:\
+- Strings must be quoted:
 "=="artifact""
 
-Edge Cases Handled:\
+- Edge Cases Handled:
 Missing fields are treated as non-passing.\
 Invalid criteria format raises clear error messages.
 
@@ -79,9 +71,9 @@ vcf-filter/
 ```
 
 ## 📈 Extending the Project
-Add support for genotype-level filtering.\
-Extend schema validation with more complex types (e.g., array comparisons).\
-Add logging and dry-run features.
+1. Add support for genotype-level filtering.
+2. Extend schema validation with more complex types (e.g., array comparisons).
+3. Add logging and dry-run features.
 
 ## ❗ Limitations
 Only INFO and FILTER fields are supported for filtering.\
