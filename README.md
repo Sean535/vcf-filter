@@ -30,26 +30,26 @@ python scripts/vcf_filter.py SAMPLE_mutect2_raw.vcf criteria.json -o filtered_ou
 ```
 
 ## 📂 Output
-- A new VCF file where:
+- A new VCF file where:\
 Variants passing all filter conditions get PASS in the FILTER field.\
 Other variants retain their original FILTER values.
 
 ## ⚙ Design
-- Filtering Algorithm:
+- Filtering Algorithm:\
 Parse and validate the JSON criteria against the INFO schema extracted from the VCF header.
 
-- For each variant:
+- For each variant:\
 Evaluate each filter rule.\
 If all are satisfied → FILTER=PASS, otherwise unchanged.\
 Write output using streaming (cyvcf2) to support large files.
 
-- Supported Operators:
+- Supported Operators:\
 ==, !=, >, >=, <, <=
 
-- Strings must be quoted:
+- Strings must be quoted:\
 "=="artifact""
 
-- Edge Cases Handled:
+- Edge Cases Handled:\
 Missing fields are treated as non-passing.\
 Invalid criteria format raises clear error messages.
 
