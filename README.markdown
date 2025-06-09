@@ -47,7 +47,7 @@ python scripts/vcf_filter.py SAMPLE_mutect2_raw.vcf criteria.json -o filtered.vc
 ```
 
 ### Output
-- A VCF file (`filtered.vcf`) with variants meeting all criteria tagged as `PASS` in the FILTER column.
+- A VCF file (default: `filtered_output.vcf`) with variants meeting all criteria tagged as `PASS` in the FILTER column.
 
 ## Design Concept
 ### Core Algorithm
