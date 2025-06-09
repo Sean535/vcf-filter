@@ -37,7 +37,7 @@ This tool filters variants in a Mutect2 VCF file by applying user-defined criter
 ## Usage
 Run the tool from the command line, specifying the input VCF, JSON criteria, and output file:
 ```bash
-python scripts/vcf_filter.py <input.vcf> <criteria.json> [-o output.vcf]
+python scripts/vcf_filter.py <input.vcf> <criteria.json> [-o <output.vcf>]
 ```
 
 ### Example
