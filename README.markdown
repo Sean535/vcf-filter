@@ -12,7 +12,7 @@ A command-line Python tool to filter Mutect2-generated VCF files based on JSON-d
 - [Maintenance and Extension](#maintenance-and-extension)
 
 ## Overview
-This tool filters variants in a Mutect2 VCF file by applying user-defined criteria specified in a JSON file. It supports numeric comparisons (e.g., `>=`, `<`) and categorical checks (e.g., `==`, `!=`) for fields like `TLOD`, `DP`, and `FILTER`. Passing variants are tagged with `PASS`, while non-passing variants retain their original FILTER status. The tool is designed for bioinformatics pipelines, emphasizing clean code, robust error handling, and comprehensive documentation.
+This tool filters variants in a Mutect2 VCF file by applying user-defined criteria specified in a JSON file. It supports numeric comparisons (e.g., `>=`, `<`) and categorical checks (e.g., `==`, `!=`). Passing variants are tagged with `PASS`, while non-passing variants retain their original FILTER status. The tool is designed for bioinformatics pipelines, emphasizing clean code, robust error handling, and comprehensive documentation.
 
 ## Requirements
 - **Python**: 3.8 or higher
@@ -21,7 +21,21 @@ This tool filters variants in a Mutect2 VCF file by applying user-defined criter
   - `jsonschema`: For JSON validation
 - **Input Files**:
   - A valid Mutect2 VCF file
-  - A JSON file with filtering criteria (e.g., `{"INFO": {"TLOD": ">=200", "DP": ">=20"}, "FILTER": ["!=artifact"]}`)
+  - A JSON file with filtering criteria follow below struture (`F` for filter name in string, `I` for info name in string, `NUM` for threshold in string)
+```JSON
+{
+  "FILTER": ["!=F1", "==F2", ...],
+  "INFO": {
+    "I1": ">=NUM1",
+    "I2": ">NUM2",
+    "I3": "<=NUM3",
+    "I4": "<NUM4",
+    "I5": "==NUM5",
+    "I6": "!=NUM6",
+    ...
+  },
+}
+```
 
 ## Installation
 1. Clone the repository:
@@ -64,40 +78,32 @@ python scripts/vcf_filter.py SAMPLE_mutect2_raw.vcf criteria.json -o filtered.vc
 
 ### Handling Multi-Allelic Sites
 - For numeric fields (e.g., `TLOD`), the filter passes if *any* allele meets the criteria, as Mutect2 reports per-allele values.
-- For categorical fields (e.g., `PON`), exact matches are required.
+- For categorical fields (e.g., `PON`), *all* allele matches are required.
 
 ## Testing
-### Validation Approach
-1. **Unit Tests**:
-   - Test schema building with a sample VCF header.
-   - Validate JSON criteria parsing and error handling for invalid operators/values.
-   - Check filter application on synthetic variants with known outcomes.
-2. **Integration Tests**:
-   - Use the provided `SAMPLE_mutect2_raw.vcf` with `criteria.json`.
-   - Expected: Variants with `TLOD >= 200`, `DP >= 20`, and `PON` flag pass (e.g., chr1:11130589, chr1:11228701).
-   - Non-passing variants (e.g., chr1:119510717 with `TLOD=3.09`) retain original FILTER.
-3. **Edge Cases**:
-   - Test empty VCF files, missing fields, and malformed JSON.
-   - Verify multi-allelic sites (e.g., chr1:200624913) handle multiple `TLOD` values correctly.
+## Test Coverage Descriptions
 
-### Test Dataset
-- **Provided**: `SAMPLE_mutect2_raw.vcf` (contains 100+ variants, including multi-allelic sites and PON flags).
-- **Synthetic**: Created a small VCF with 10 variants, covering:
-  - High/low `TLOD` and `DP`.
-  - Presence/absence of `PON`.
-  - Multi-allelic sites with mixed passing/failing alleles.
-- **Validation**: Manually inspected output VCF to confirm `PASS` tags align with criteria.
+| Test File                          | Description                                                                 | Expected Result               |
+|------------------------------------|-----------------------------------------------------------------------------|-------------------------------|
+| valid.json                         | Valid FILTER and INFO criteria.                                             | Pass, output filtered VCF     |
+| valid_filter_fail.json             | FILTER condition excludes all records.                                      | Pass, output empty VCF        |
+| valid_info_fail.json               | INFO condition excludes all records.                                        | Pass, output empty VCF        |
+| malformed.json                     | Malformed JSON (invalid syntax).                                            | Fail, JSON parse error        |
+| invalid_schema_filter.json         | FILTER is not a list (invalid schema).                                      | Fail, schema validation error |
+| invalid_schema_info.json           | INFO value is not a string (invalid schema).                                | Fail, schema validation error |
+| invalid_filter_op.json             | FILTER contains an invalid operator (">=" not supported for FILTER).        | Fail, operator error          |
+| invalid_info_num_value.json        | INFO numeric value is not a number.                                         | Fail, value error             |
+| invalid_info_num_op.json           | INFO operator is invalid (not recognized).                                  | Fail, operator error          |
+| invalid_info_key.json              | INFO key does not exist in VCF records.                                     | Fail, key error               |
+| invalid_info_flag_op.json          | INFO flag field with invalid operator.                                      | Fail, operator error          |
 
-### Running Tests
-1. Place test files in a `tests/` directory.
-2. Run:
-   ```bash
-   python scripts/vcf_filter.py tests/test.vcf tests/test_criteria.json -o tests/test_output.vcf
-   ```
-3. Compare `test_output.vcf` with expected results using `diff` or a VCF comparison tool.
+**How to run coverage tests:**
+```bash
+bash run_coverage.sh
+```
 
 ## Limitations
-- **Field Support**: Currently supports `FILTER` and `INFO` fields; `FORMAT` fields are not implemented but can be added.
+- **Annotation Support**: Currently supports `FILTER` and `INFO` fields; `FORMAT` fields are not implemented but can be added. Also, annotation libraries included is better than directly parsing input VCF, which might not have the annotation shown in input JSON.
 - **Performance**: While optimized for streaming, extremely large VCFs (>10M variants) may require additional optimization (e.g., splitting input file for parallel processing).
 - **Flag Fields**: Assumes flag field (e.g., `PON`) presence equates to `True`; other flag behaviors may need customization.
 
