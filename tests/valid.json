@@ -1,0 +1,8 @@
+{
+    "FILTER": ["!=artifact", "!=LowDP"],
+    "INFO": {
+        "TLOD": ">=200", 
+        "DP": ">=20",
+        "PON": "==True"
+    }
+}
